@@ -1,5 +1,6 @@
 #include "globals.h"
 #include "payload.h"
+#include "sensor.h"//<<<<<
 
 // initialize payload encoder
 PayloadConvert payload(PAYLOAD_BUFFER_SIZE);

@@ -87,6 +87,11 @@ void setup() {
 
   char features[100] = "";
 
+  // create some semaphores for syncing / mutexing tasks
+  I2Caccess = xSemaphoreCreateMutex(); // for access management of i2c bus
+  _ASSERT(I2Caccess != NULL);
+  I2C_MUTEX_UNLOCK();
+
   // disable brownout detection
 #ifdef DISABLE_BROWNOUT
   // register with brownout is at address DR_REG_RTCCNTL_BASE + 0xd4
@@ -471,14 +476,26 @@ void setup() {
   button_init(HAS_BUTTON);
 #endif // HAS_BUTTON
 
-// only if we have a timesource we do timesync
-#if ((HAS_LORA_TIME) || (HAS_GPS) || (HAS_RTC))
-  time_init();
-  strcat_P(features, " TIME");
-#endif // timesync
-
   // cyclic function interrupts
   cyclicTimer.attach(HOMECYCLE, setCyclicIRQ);
+
+// only if we have a timesource we do timesync
+#if ((HAS_LORA_TIME) || (HAS_GPS) || (HAS_RTC))
+
+#if (defined HAS_IF482 || defined HAS_DCF77)
+  ESP_LOGI(TAG, "Starting Clock Controller...");
+  clock_init();
+#endif
+
+#if (HAS_LORA_TIME)
+  timesync_init(); // create loraserver time sync task
+#endif
+
+  ESP_LOGI(TAG, "Starting Timekeeper...");
+  _ASSERT(timepulse_init()); // starts pps and cyclic time sync
+  strcat_P(features, " TIME");
+
+#endif // timesync
 
   // show compiled features
   ESP_LOGI(TAG, "Features:%s", features);

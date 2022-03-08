@@ -18,6 +18,10 @@ void doHousekeeping() {
   if ((RTC_runmode == RUNMODE_UPDATE) || (RTC_runmode == RUNMODE_MAINTENANCE))
     do_reset(true); // warmstart
 
+  // try to get time if we don't yet have a recent timesource
+  if (timeSource == _unsynced || timeSource == _set)
+    calibrateTime();
+
   // print heap and task storage information
   ESP_LOGD(TAG, "Heap: Free:%d, Min:%d, Size:%d, Alloc:%d, StackHWM:%d",
            ESP.getFreeHeap(), ESP.getMinFreeHeap(), ESP.getHeapSize(),
@@ -89,7 +93,7 @@ void doHousekeeping() {
   ESP_LOGI(TAG, "BME680 Temp: %.2f°C | IAQ: %.2f | IAQacc: %d",
            bme_status.temperature, bme_status.iaq, bme_status.iaq_accuracy);
 #elif defined HAS_BME280
-  ESP_LOGI(TAG, "BME280 Temp: %.2f°C | Humidity: %.2f | Pressure: %.0f",
+  ESP_LOGI(TAG, "BME280 Temp: %.2f°C | Humidity: %.2f%% | Pressure: %.2fhPa",
            bme_status.temperature, bme_status.humidity, bme_status.pressure);
 #elif defined HAS_BMP180
   ESP_LOGI(TAG, "BMP180 Temp: %.2f°C | Pressure: %.0f", bme_status.temperature,
@@ -120,10 +124,6 @@ void doHousekeeping() {
   } else {
     sds011_wakeup();
   }
-#endif
-
-#if (HAS_SDCARD)
-  sdcard_flush();
 #endif
 
 } // doHousekeeping()

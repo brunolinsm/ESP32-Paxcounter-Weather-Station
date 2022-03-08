@@ -6,11 +6,11 @@
 // COUNTRY SETTINGS
 // --> please check with you local regulations for ISM band frequency use!
 
-#define CFG_eu868 1 // Europe (high band)
+//#define CFG_eu868 1 // Europe (high band)
 //#define CFG_eu433 1 // Europe (low band)
 //#define CFG_us915 1 // USA, Canada and South America
 //#define CFG_in866 1 // India
-//#define CFG_au915 1 // Australia
+#define CFG_au915 1 // Australia
 //#define CFG_as923 1 // Asia
 //#define CFG_cn783 1 // China (high band)
 //#define CFG_cn490 1 // China (low band)
@@ -51,7 +51,7 @@
 // Enable this to allow using printf() to print to the given serial port
 // (or any other Print object). This can be easy for debugging. The
 // current implementation only works on AVR, though.
-//#define LMIC_PRINTF_TO Serial
+#define LMIC_PRINTF_TO Serial//<<<<<
 
 // Change the SPI clock speed if you encounter errors
 // communicating with the radio.
@@ -68,7 +68,8 @@
 // Uncomment this to disable all code related to ping
 #define DISABLE_PING
 // Uncomment this to disable all code related to beacon tracking.
-// Requires ping to be disabled too#define DISABLE_BEACONS
+// Requires ping to be disabled too
+#define DISABLE_BEACONS//<<<<<
 
 // Uncomment these to disable the corresponding MAC commands.
 // Class A
@@ -109,4 +110,4 @@
 //#define USE_MBEDTLS_AES
 
 // Define this for devices with external power.
-//#define LMIC_MCMD_DEVS_BATT_DEFAULT MCMD_DEVS_EXT_POWER
+#define LMIC_MCMD_DEVS_BATT_DEFAULT MCMD_DEVS_EXT_POWER//<<<<<

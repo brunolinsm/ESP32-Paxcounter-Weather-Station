@@ -84,7 +84,8 @@ void set_sendcycle(uint8_t val[]) {
 
 void set_sleepcycle(uint8_t val[]) {
   // swap byte order from msb to lsb, note: this is a platform dependent hack
-  cfg.sleepcycle = __builtin_bswap16(*(uint16_t *)(val));
+  uint16_t t = __builtin_bswap16(*(uint16_t *)(val));
+  cfg.sleepcycle = t;
   ESP_LOGI(TAG, "Remote command: set sleep cycle to %d seconds",
            cfg.sleepcycle * 10);
 }
@@ -484,7 +485,7 @@ void rcmd_process(void *pvParameters) {
 } // rcmd_process()
 
 // enqueue remote command
-void rcommand(const uint8_t *cmd, const size_t cmdlength) {
+void IRAM_ATTR rcommand(const uint8_t *cmd, const size_t cmdlength) {
 
   RcmdBuffer_t rcmd = {0};
 

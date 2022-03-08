@@ -1,8 +1,6 @@
 #ifndef _MQTTCLIENT_H
 #define _MQTTCLIENT_H
 
-#ifdef HAS_MQTT
-
 #include "globals.h"
 #include "rcommand.h"
 #include "hash.h"
@@ -25,7 +23,5 @@ void mqtt_callback(MQTTClient *client, char *topic, char *payload, int length);
 void NetworkEvent(WiFiEvent_t event);
 esp_err_t mqtt_init(void);
 void mqtt_deinit(void);
-
-#endif
 
 #endif // _MQTTCLIENT_H
