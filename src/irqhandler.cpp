@@ -42,6 +42,12 @@ void irqHandler(void *pvParameters) {
       readPluviometer();
 #endif
 
+// anemometer data to be read?
+#ifdef HAS_SENSOR_3
+    if (irqSource & ANEM_IRQ)
+      readAnemometer();
+#endif
+
 // display needs refresh?
 #ifdef HAS_DISPLAY
     if (irqSource & DISPLAY_IRQ)
@@ -119,6 +125,10 @@ void IRAM_ATTR PMUIRQ() { doIRQ(PMU_IRQ); }
 
 #ifdef HAS_SENSOR_1
 void IRAM_ATTR PluvIRQ() { doIRQ(PLUV_IRQ); }
+#endif
+
+#ifdef HAS_SENSOR_3
+void IRAM_ATTR AnemIRQ() { doIRQ(ANEM_IRQ); }
 #endif
 
 void mask_user_IRQ() { xTaskNotify(irqHandlerTask, MASK_IRQ, eSetBits); }

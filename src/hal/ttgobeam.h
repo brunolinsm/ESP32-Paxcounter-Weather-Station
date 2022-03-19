@@ -58,7 +58,7 @@
 #define HAS_SENSORS 1 // comment out if device has user defined sensors
 #define HAS_SENSOR_1 1 // comment out if device has user defined sensor #1
 #define HAS_SENSOR_2 1 // comment out if device has user defined sensor #2
-#define HAS_SENSOR_3 0 // comment out if device has user defined sensor #3
+#define HAS_SENSOR_3 1 // comment out if device has user defined sensor #3
 
 // used pins pluviometer (SENSOR 1)
 #define PLUV_PIN GPIO_NUM_4

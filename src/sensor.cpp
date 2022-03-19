@@ -19,6 +19,8 @@ float dailyRain_till_LastHour = 0.0;      // rain accumulated for the day till t
 uint16_t wdiRead = 0;
 uint16_t wdiValue = 0;
 
+int counter;
+
 #define SENSORBUFFER                                                           \
   10 // max. size of user sensor data buffer in bytes [default=20]
 
@@ -32,6 +34,8 @@ void sensor_init(void) {
   pinMode(ANEM_PIN,INPUT);
   digitalWrite(PLUV_RST_PIN,HIGH);            // Enable optocoupler and SCR
   attachInterrupt(PLUV_PIN, PluvIRQ, RISING);
+  attachInterrupt(ANEM_PIN, AnemIRQ, RISING);
+  counter = 0;
 }
 
 uint8_t sensor_mask(uint8_t sensor_no) {
@@ -103,6 +107,7 @@ uint8_t *sensor_read(uint8_t sensor) {
 
     ESP_LOGI(TAG, "WDI Read %d | Wind Direction %d°", wdiRead, wdiValue);
     ESP_LOGI(TAG, "Rain %.2f mm/h", dailyRain);
+    ESP_LOGI(TAG, "Speed Wind %.2f pulses", counter);
 
     buf[0] = length;
     buf[1] = 0x01;
@@ -147,4 +152,8 @@ void readPluviometer(){
   //   digitalWrite(PLUV_RST_PIN,LOW);       // Reset pluviometer
       
   //   ESP_LOGI(TAG, "Rain %.2f mm/h | Rain %.2f mm/d", hourlyRain, dailyRain);
+}
+
+void readAnemometer(){
+  counter++;
 }

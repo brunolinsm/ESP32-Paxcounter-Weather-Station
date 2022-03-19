@@ -12,6 +12,7 @@
 #define MATRIX_DISPLAY_IRQ _bitl(8)
 #define PMU_IRQ _bitl(9)
 #define PLUV_IRQ _bitl(10)
+#define ANEM_IRQ _bitl(11)
 
 #include "globals.h"
 #include "button.h"
@@ -48,6 +49,10 @@ void IRAM_ATTR PMUIRQ();
 
 #ifdef HAS_SENSOR_1
 void IRAM_ATTR PluvIRQ();
+#endif
+
+#ifdef HAS_SENSOR_3
+void IRAM_ATTR AnemIRQ();
 #endif
 
 #endif
