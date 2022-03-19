@@ -11,6 +11,7 @@
 #define BME_IRQ _bitl(7)
 #define MATRIX_DISPLAY_IRQ _bitl(8)
 #define PMU_IRQ _bitl(9)
+#define PLUV_IRQ _bitl(10)
 
 #include "globals.h"
 #include "button.h"
@@ -20,6 +21,7 @@
 #include "bmesensor.h"
 #include "power.h"
 #include "ledmatrixdisplay.h"
+#include "sensor.h"
 
 void irqHandler(void *pvParameters);
 void mask_user_IRQ();
@@ -42,6 +44,10 @@ void IRAM_ATTR ButtonIRQ();
 
 #ifdef HAS_PMU
 void IRAM_ATTR PMUIRQ();
+#endif
+
+#ifdef HAS_SENSOR_1
+void IRAM_ATTR PluvIRQ();
 #endif
 
 #endif

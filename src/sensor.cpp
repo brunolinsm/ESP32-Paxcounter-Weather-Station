@@ -30,7 +30,8 @@ void sensor_init(void) {
   pinMode(PLUV_PIN,INPUT);
   pinMode(WDI_PIN,INPUT);
   pinMode(ANEM_PIN,INPUT);
-
+  digitalWrite(PLUV_RST_PIN,HIGH);            // Enable optocoupler and SCR
+  attachInterrupt(PLUV_PIN, PluvIRQ, RISING);
 }
 
 uint8_t sensor_mask(uint8_t sensor_no) {
@@ -63,30 +64,7 @@ uint8_t *sensor_read(uint8_t sensor) {
 
   switch (sensor) {
 
-  case 1:   // Pluviometer
-
-    //ESP_LOGD(TAG, "Read data from pluviometer!");
-    digitalWrite(PLUV_RST_PIN,HIGH);        // Enable optocoupler and SCR
-    delay(50);
-    //DateTime now = rtc.now();
-    if ((bucketPosition==false)&&(digitalRead(PLUV_PIN)==HIGH)){
-    bucketPosition=true;
-    dailyRain+=bucketAmount;                // update the daily rain
-    }
-    if ((bucketPosition==true)&&(digitalRead(PLUV_PIN)==LOW)){
-      bucketPosition=false;  
-    } 
-    
-    //if(now.minute() != 0) first = true;                     // after the first minute is over, be ready for next read
-  
-    //if(now.minute() == 0 && first == true){
- 
-    hourlyRain = dailyRain - dailyRain_till_LastHour;      // calculate the last hour's rain
-    dailyRain_till_LastHour = dailyRain;                   // update the rain till last hour for next calculation
-    
-    digitalWrite(PLUV_RST_PIN,LOW);       // Reset pluviometer
-      
-    ESP_LOGI(TAG, "Rain %.2f mm/h | Rain %.2f mm/d", hourlyRain, dailyRain);
+  case 1:   
 
     buf[0] = length;
     buf[1] = 0x01;
@@ -124,6 +102,7 @@ uint8_t *sensor_read(uint8_t sensor) {
     }
 
     ESP_LOGI(TAG, "WDI Read %d | Wind Direction %d°", wdiRead, wdiValue);
+    ESP_LOGI(TAG, "Rain %.2f mm/h", dailyRain);
 
     buf[0] = length;
     buf[1] = 0x01;
@@ -141,4 +120,31 @@ uint8_t *sensor_read(uint8_t sensor) {
   }
 
   return buf;
+}
+
+void readPluviometer(){
+  // // Pluviometer
+
+  //   //ESP_LOGD(TAG, "Read data from pluviometer!");
+  // digitalWrite(PLUV_RST_PIN,HIGH);        // Enable optocoupler and SCR
+  //   delay(50);
+  //   //DateTime now = rtc.now();
+  //   if ((bucketPosition==false)&&(digitalRead(PLUV_PIN)==HIGH)){
+  //   bucketPosition=true;
+  dailyRain+=bucketAmount;                // update the daily rain
+  //   }
+  //   if ((bucketPosition==true)&&(digitalRead(PLUV_PIN)==LOW)){
+  //     bucketPosition=false;  
+  //   } 
+    
+  //   //if(now.minute() != 0) first = true;                     // after the first minute is over, be ready for next read
+  
+  //   //if(now.minute() == 0 && first == true){
+ 
+  //   hourlyRain = dailyRain - dailyRain_till_LastHour;      // calculate the last hour's rain
+  //   dailyRain_till_LastHour = dailyRain;                   // update the rain till last hour for next calculation
+    
+  //   digitalWrite(PLUV_RST_PIN,LOW);       // Reset pluviometer
+      
+  //   ESP_LOGI(TAG, "Rain %.2f mm/h | Rain %.2f mm/d", hourlyRain, dailyRain);
 }

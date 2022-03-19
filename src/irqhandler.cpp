@@ -36,6 +36,12 @@ void irqHandler(void *pvParameters) {
       readButton();
 #endif
 
+// pluviometer data to be read?
+#ifdef HAS_SENSOR_1
+    if (irqSource & PLUV_IRQ)
+      readPluviometer();
+#endif
+
 // display needs refresh?
 #ifdef HAS_DISPLAY
     if (irqSource & DISPLAY_IRQ)
@@ -109,6 +115,10 @@ void IRAM_ATTR ButtonIRQ() { doIRQ(BUTTON_IRQ); }
 
 #ifdef HAS_PMU
 void IRAM_ATTR PMUIRQ() { doIRQ(PMU_IRQ); }
+#endif
+
+#ifdef HAS_SENSOR_1
+void IRAM_ATTR PluvIRQ() { doIRQ(PLUV_IRQ); }
 #endif
 
 void mask_user_IRQ() { xTaskNotify(irqHandlerTask, MASK_IRQ, eSetBits); }
