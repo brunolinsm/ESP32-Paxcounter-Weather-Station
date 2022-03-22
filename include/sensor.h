@@ -9,7 +9,7 @@
 uint8_t sensor_mask(uint8_t sensor_no);
 uint8_t *sensor_read(uint8_t sensor);
 void sensor_init(void);
-void readPluviometer(void);
-void readAnemometer(void);
+void IRAM_ATTR readPluviometer();
+void IRAM_ATTR readAnemometer();
 
 #endif

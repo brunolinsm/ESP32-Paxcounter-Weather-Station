@@ -68,7 +68,7 @@
 #define WDI_PIN GPIO_NUM_34
 
 // used pin anemometer (SENSOR 3)
-#define ANEM_PIN GPIO_NUM_23
+#define ANEM_PIN GPIO_NUM_35
 
 // SDS011 dust sensor settings
 //#define HAS_SDS011 1 // use SDS011
