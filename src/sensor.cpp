@@ -1,6 +1,7 @@
 // Basic Config
 #include "globals.h"
 #include "sensor.h"
+#include "time.h"
 
 // Local logging tag
 static const char TAG[] = __FILE__;
@@ -10,10 +11,13 @@ float bucketAmount = 0.25;                // ml equivalent of the trip tipping-b
 float dailyRain = 0.0;                    // rain accumulated for the day
 float hourlyRain = 0.0;                   // rain accumulated for one hour
 float dailyRain_till_LastHour = 0.0;      // rain accumulated for the day till the last hour
+time_t currentTime;                       // timestamp update
+struct tm now = {0};                      // UTC time
 
 // Wind Direction Indicator variables
 uint16_t wdiRead = 0;
 uint16_t wdiValue = 0;
+char* wdiText;
 
 // Wind speed variables
 float RPM;
@@ -76,19 +80,26 @@ uint8_t *sensor_read(uint8_t sensor) {
   switch (sensor) {
 
   case 1:    //Pluviometer
+    
+    // Time control
+    struct timeval tv_now;
+    gettimeofday(&tv_now, NULL);  
+    currentTime = compileTime() + (time_t)tv_now.tv_sec;
+    localtime_r(&currentTime,&now);
 
-  //   if(now.minute() == 0){
-  //     hourlyRain = dailyRain - dailyRain_till_LastHour;    // calculate the last hour's rain
-  //     dailyRain_till_LastHour = dailyRain;                 // update the rain till last hour for next calculation
-  //   }
+    if(now.tm_min == 0){
+      hourlyRain = dailyRain - dailyRain_till_LastHour;    // calculate the last hour's rain
+      dailyRain_till_LastHour = dailyRain;                 // update the rain till last hour for next calculation
+    }
+    if(now.tm_hour == 0) {
+      dailyRain = 0.0;                                     // clear daily-rain at midnight
+      dailyRain_till_LastHour = 0.0;                       // we do not want negative rain at 01:00
+    }  
 
-  //   if(now.hour()== 0) {
-  //     dailyRain = 0.0;                                     // clear daily-rain at midnight
-  //     dailyRain_till_LastHour = 0.0;                       // we do not want negative rain at 01:00
-  // }  
-      
     detachInterrupt(PLUV_PIN);
     ESP_LOGI(TAG, "Hourly Rain %.2f mm/h | Daily Rain %.2f mm/d", hourlyRain, dailyRain);
+    ESP_LOGI(TAG, "Current Time %d:%d:%d", now.tm_hour, now.tm_min, now.tm_sec);
+
     attachInterrupt(digitalPinToInterrupt(PLUV_PIN), PluvIRQ, RISING);   
 
     buf[0] = length;
@@ -100,33 +111,42 @@ uint8_t *sensor_read(uint8_t sensor) {
   case 2:    //Wind Direction Indicator (WDI)
     
     wdiRead = analogRead(WDI_PIN);
-
+    wdiText = "";
+    
     if (wdiRead == 0){
       wdiValue = 315;                                       // NORTHWEST
+      wdiText = "NORTHWEST";
     }
     else if ((wdiRead >= 5) && (wdiRead <= 100)){
       wdiValue = 270;                                       // WEST
+      wdiText = "WEST";
     }
     else if ((wdiRead >= 101) && (wdiRead <= 300)){
       wdiValue = 225;                                       // SOUTHWEST
+      wdiText = "SOUTHWEST";
     }
     else if ((wdiRead >= 301) && (wdiRead <= 500)){
       wdiValue = 180;                                       // SOUTH
+      wdiText = "SOUTH";
     }
     else if ((wdiRead >= 501) && (wdiRead <= 700)){
       wdiValue = 135;                                       // SOUTHEAST
+      wdiText = "SOUTHEAST";
     }
     else if ((wdiRead >= 701) && (wdiRead <= 900)){
       wdiValue = 90;                                        // EAST
+      wdiText = "EAST";
     }
     else if ((wdiRead >= 901) && (wdiRead <= 1000)){
       wdiValue = 45;                                        // NORTHEAST
+      wdiText = "NORTHEAST";
     }
     else{
       wdiValue = 0;                                         // NORTH
+      wdiText = "NORTH";
     }
 
-    ESP_LOGI(TAG, "WDI Read %d | Wind Direction %d°", wdiRead, wdiValue);
+    ESP_LOGI(TAG, "WDI Read %d | Wind Direction %d° (%s)", wdiRead, wdiValue, wdiText);
 
     buf[0] = length;
     buf[1] = 0x01;

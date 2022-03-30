@@ -3,6 +3,7 @@
 
 #include "configmanager.h"
 #include "irqhandler.h"
+#include "timekeeper.h"
 
 #define HAS_SENSORS (HAS_SENSOR_1 || HAS_SENSOR_2 || HAS_SENSOR_3)
 
