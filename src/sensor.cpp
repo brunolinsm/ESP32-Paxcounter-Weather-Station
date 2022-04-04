@@ -2,6 +2,7 @@
 #include "globals.h"
 #include "sensor.h"
 #include "time.h"
+#include "timekeeper.h"
 
 // Local logging tag
 static const char TAG[] = __FILE__;
@@ -11,7 +12,8 @@ float bucketAmount = 0.25;                // ml equivalent of the trip tipping-b
 float dailyRain = 0.0;                    // rain accumulated for the day
 float hourlyRain = 0.0;                   // rain accumulated for one hour
 float dailyRain_till_LastHour = 0.0;      // rain accumulated for the day till the last hour
-time_t currentTime;                       // timestamp update
+volatile byte pluvCounter;                // pluviometer counter
+time_t currentSec;                        // timestamp
 struct tm now = {0};                      // UTC time
 
 // Wind Direction Indicator variables
@@ -22,17 +24,17 @@ char* wdiText;
 // Wind speed variables
 float RPM;
 float windSpeed;
-volatile byte counter;
+volatile byte anemCounter;
 
 #define SENSORBUFFER                                                           \
   10 // max. size of user sensor data buffer in bytes [default=20]
 
 void IRAM_ATTR readPluviometer(){
-  dailyRain+=bucketAmount;                // Update the pluviometer read
+  pluvCounter++;                             
 }
 
 void IRAM_ATTR readAnemometer(){
-  counter++;                              // Update the anemometer read
+  anemCounter++;                              
 }
 
 void sensor_init(void) {
@@ -75,19 +77,20 @@ uint8_t sensor_mask(uint8_t sensor_no) {
 uint8_t *sensor_read(uint8_t sensor) {
 
   static uint8_t buf[SENSORBUFFER] = {0};
-  uint8_t length = 3;
+  uint8_t length = 2;
 
   switch (sensor) {
 
   case 1:    //Pluviometer
     
+    detachInterrupt(PLUV_PIN);
+    
     // Time control
-    struct timeval tv_now;
-    gettimeofday(&tv_now, NULL);  
-    currentTime = compileTime() + (time_t)tv_now.tv_sec;
-    localtime_r(&currentTime,&now);
+    currentSec = time(NULL);
+    localtime_r(&currentSec,&now);
 
     if(now.tm_min == 0){
+      dailyRain = pluvCounter * bucketAmount;              // convert pulses in mm/d
       hourlyRain = dailyRain - dailyRain_till_LastHour;    // calculate the last hour's rain
       dailyRain_till_LastHour = dailyRain;                 // update the rain till last hour for next calculation
     }
@@ -96,16 +99,15 @@ uint8_t *sensor_read(uint8_t sensor) {
       dailyRain_till_LastHour = 0.0;                       // we do not want negative rain at 01:00
     }  
 
-    detachInterrupt(PLUV_PIN);
     ESP_LOGI(TAG, "Hourly Rain %.2f mm/h | Daily Rain %.2f mm/d", hourlyRain, dailyRain);
-    ESP_LOGI(TAG, "Current Time %d:%d:%d", now.tm_hour, now.tm_min, now.tm_sec);
+    ESP_LOGI(TAG, "Current Time %d:%d:%d", now.tm_hour, now.tm_min, now.tm_sec);  
 
-    attachInterrupt(digitalPinToInterrupt(PLUV_PIN), PluvIRQ, RISING);   
-
+    hourlyRain = hourlyRain * 100;                         // to transport this as byte via Lora 
     buf[0] = length;
-    buf[1] = 0x01;
-    buf[2] = 0x02;
-    buf[3] = 0x03;
+    buf[1] = lowByte((uint16_t)hourlyRain);
+    buf[2] = highByte((uint16_t)hourlyRain);
+
+    attachInterrupt(digitalPinToInterrupt(PLUV_PIN), PluvIRQ, RISING); 
     break;
 
   case 2:    //Wind Direction Indicator (WDI)
@@ -149,25 +151,25 @@ uint8_t *sensor_read(uint8_t sensor) {
     ESP_LOGI(TAG, "WDI Read %d | Wind Direction %d° (%s)", wdiRead, wdiValue, wdiText);
 
     buf[0] = length;
-    buf[1] = 0x01;
-    buf[2] = 0x02;
-    buf[3] = 0x03;
+    buf[1] = lowByte(wdiValue);
+    buf[2] = highByte(wdiValue);
     break;
 
   case 3:      //Anemometer
-                  
-    RPM = counter;                              // 1min cycle interval (counter=revolutions per minute)
+
+    detachInterrupt(ANEM_PIN);              
+    RPM = anemCounter;                          // 1min cycle interval (counter=revolutions per minute)
     windSpeed = ((30.35 * RPM) / 1000) * 3.6;   // Calculate wind speed on km/h
-    detachInterrupt(ANEM_PIN);
-    ESP_LOGI(TAG, "Wind Speed %.2f km/h | Pulses %.d", windSpeed, counter);
-    windSpeed = 0;
-    counter = 0;   
-    attachInterrupt(digitalPinToInterrupt(ANEM_PIN), AnemIRQ, RISING); 
+    ESP_LOGI(TAG, "Wind Speed %.2f km/h | Pulses %.d", windSpeed, anemCounter); 
     
+    windSpeed = windSpeed * 100;                         // to transport this as byte via Lora 
     buf[0] = length;
-    buf[1] = 0x01;
-    buf[2] = 0x02;
-    buf[3] = 0x03;
+    buf[1] = lowByte((uint16_t)windSpeed);
+    buf[2] = highByte((uint16_t)windSpeed);
+
+    windSpeed = 0;
+    anemCounter = 0;   
+    attachInterrupt(digitalPinToInterrupt(ANEM_PIN), AnemIRQ, RISING);
     break;
   }
 
