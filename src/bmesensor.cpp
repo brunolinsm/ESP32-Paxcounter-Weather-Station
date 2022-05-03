@@ -5,7 +5,7 @@
 // Local logging tag
 static const char TAG[] = __FILE__;
 
-bmeStatus_t bme_status = {0, 0, 0, 0, 0, 0, 0, 0};
+bmeStatus_t bme_status = {0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 Ticker bmecycler;
 
@@ -142,11 +142,14 @@ void bme_storedata(bmeStatus_t *bme_store) {
       updateState();
     }
 #elif defined HAS_BME280
-    bme_store->temperature = bme.readTemperature();
-    bme_store->pressure = (bme.readPressure() / 100); // conversion Pa -> hPa
+    bme_store->raw_temperature = bme.readTemperature();   // instant temperature
+    bme_store->temperature += bme_store->raw_temperature; // accumulated temperature
+    bme_store->raw_pressure = (bme.readPressure() / 100); // conversion Pa -> hPa (instant pressure)
+    bme_store->pressure += bme_store->raw_pressure;       // accumulated pressure
+    bme_store->raw_humidity = bme.readHumidity();         // instant humidity
+    bme_store->humidity += bme_store->raw_humidity;       // accumulated pressure
+    bme_store->iaq = 0;                                   // IAQ feature not present with BME280
     bme.readAltitude(SEALEVELPRESSURE_HPA);//<<<<<
-    bme_store->humidity = bme.readHumidity();
-    bme_store->iaq = 0; // IAQ feature not present with BME280
 #elif defined HAS_BMP180
     bme_store->temperature = bmp.readTemperature();
     bme_store->pressure = (bmp.readPressure() / 100.0); // conversion Pa -> hPa

@@ -9,9 +9,7 @@ static const char TAG[] = __FILE__;
 
 // Pluviometer variables
 float bucketAmount = 0.25;                // ml equivalent of the trip tipping-bucket
-float dailyRain = 0.0;                    // rain accumulated for the day
 float hourlyRain = 0.0;                   // rain accumulated for one hour
-float dailyRain_till_LastHour = 0.0;      // rain accumulated for the day till the last hour
 volatile byte pluvCounter;                // pluviometer counter
 time_t currentSec;                        // timestamp
 struct tm now = {0};                      // UTC time
@@ -84,32 +82,19 @@ uint8_t *sensor_read(uint8_t sensor) {
   case 1:    //Pluviometer
     
     detachInterrupt(PLUV_PIN);
+    hourlyRain = pluvCounter * bucketAmount;   // convert pulses in mm/d
+    hourlyRain = hourlyRain * 100;             // to transport this as byte via Lora 
+    ESP_LOGI(TAG, "Hourly Rain %.2f mm", hourlyRain);
+    pluvCounter = 0;                           // pluviometer counter reset                         
     
-    // Time control
-    currentSec = time(NULL);
-    localtime_r(&currentSec,&now);
-
-    if(now.tm_min == 0){
-      dailyRain = pluvCounter * bucketAmount;              // convert pulses in mm/d
-      hourlyRain = dailyRain - dailyRain_till_LastHour;    // calculate the last hour's rain
-      dailyRain_till_LastHour = dailyRain;                 // update the rain till last hour for next calculation
-    }
-    if(now.tm_hour == 0) {
-      dailyRain = 0.0;                                     // clear daily-rain at midnight
-      dailyRain_till_LastHour = 0.0;                       // we do not want negative rain at 01:00
-    }  
-
-    ESP_LOGI(TAG, "Hourly Rain %.2f mm/h | Daily Rain %.2f mm/d", hourlyRain, dailyRain);
-    ESP_LOGI(TAG, "Current Time %d:%d:%d", now.tm_hour, now.tm_min, now.tm_sec);  
-
-    hourlyRain = hourlyRain * 100;                         // to transport this as byte via Lora 
     buf[0] = length;
     buf[1] = lowByte((uint16_t)hourlyRain);
     buf[2] = highByte((uint16_t)hourlyRain);
-
+    
     attachInterrupt(digitalPinToInterrupt(PLUV_PIN), PluvIRQ, RISING); 
     break;
-
+    
+   
   case 2:    //Wind Direction Indicator (WDI)
     
     wdiRead = analogRead(WDI_PIN);
@@ -157,7 +142,15 @@ uint8_t *sensor_read(uint8_t sensor) {
 
   case 3:      //Anemometer
 
-    detachInterrupt(ANEM_PIN);              
+    detachInterrupt(ANEM_PIN);
+
+    // Time control
+    // currentSec = time(NULL);
+    // localtime_r(&currentSec,&now);
+
+    // if(now.tm_min == 0){
+    // ESP_LOGI(TAG, "Current Time %d:%d:%d", now.tm_hour, now.tm_min, now.tm_sec);
+    
     RPM = anemCounter;                          // 1min cycle interval (counter=revolutions per minute)
     windSpeed = ((30.35 * RPM) / 1000) * 3.6;   // Calculate wind speed on km/h
     ESP_LOGI(TAG, "Wind Speed %.2f km/h | Pulses %.d", windSpeed, anemCounter); 

@@ -101,6 +101,7 @@ typedef struct {
   float pressure;        // pressure signal
   float raw_temperature; // raw temperature signal
   float raw_humidity;    // raw humidity signal
+  float raw_pressure;    // raw pressure signal
   float gas;             // raw gas sensor signal
 } bmeStatus_t;
 
