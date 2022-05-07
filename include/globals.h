@@ -103,6 +103,7 @@ typedef struct {
   float raw_humidity;    // raw humidity signal
   float raw_pressure;    // raw pressure signal
   float gas;             // raw gas sensor signal
+  uint8_t count_to_avg;  // counter to calculate average values
 } bmeStatus_t;
 
 typedef struct {

@@ -18,8 +18,8 @@
 #define HAS_LORA 1       // comment out if device shall not send data via LoRa
 #define CFG_sx1276_radio 1 // HPD13A LoRa SoC
 #define HAS_BUTTON GPIO_NUM_39 // on board button (next to reset)
-#define BAT_MEASURE_ADC ADC1_GPIO35_CHANNEL // battery probe GPIO pin -> ADC1_CHANNEL_7
-#define BAT_VOLTAGE_DIVIDER 2 // voltage divider 100k/100k on board
+// #define BAT_MEASURE_ADC ADC1_GPIO35_CHANNEL // battery probe GPIO pin -> ADC1_CHANNEL_7
+// #define BAT_VOLTAGE_DIVIDER 2 // voltage divider 100k/100k on board
 
 // Pins for LORA chip SPI interface, reset line and interrupt lines//<<<<<
 //#define LORA_SCK (5)

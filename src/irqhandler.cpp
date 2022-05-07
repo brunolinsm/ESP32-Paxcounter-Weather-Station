@@ -43,10 +43,10 @@ void irqHandler(void *pvParameters) {
 #endif
 
 // anemometer data to be read?
-#ifdef HAS_SENSOR_3
-    if (irqSource & ANEM_IRQ)
-      readAnemometer();
-#endif
+// #ifdef HAS_SENSOR_3
+//     if (irqSource & ANEM_IRQ)
+//       readAnemometer();
+// #endif
 
 // display needs refresh?
 #ifdef HAS_DISPLAY
@@ -76,7 +76,11 @@ void irqHandler(void *pvParameters) {
     // are cyclic tasks due?
     if (irqSource & CYCLIC_IRQ)
       doHousekeeping();
-
+    
+    // are wind cyclic tasks due?
+    if (irqSource & WINDCYCLE_IRQ)
+      anemometerWdiRead();
+      
 // do we have a power event?
 #ifdef HAS_PMU
     if (irqSource & PMU_IRQ)
@@ -127,9 +131,9 @@ void IRAM_ATTR PMUIRQ() { doIRQ(PMU_IRQ); }
 void IRAM_ATTR PluvIRQ() { doIRQ(PLUV_IRQ); }
 #endif
 
-#ifdef HAS_SENSOR_3
-void IRAM_ATTR AnemIRQ() { doIRQ(ANEM_IRQ); }
-#endif
+// #ifdef HAS_SENSOR_3
+// void IRAM_ATTR AnemIRQ() { doIRQ(ANEM_IRQ); }
+// #endif
 
 void mask_user_IRQ() { xTaskNotify(irqHandlerTask, MASK_IRQ, eSetBits); }
 

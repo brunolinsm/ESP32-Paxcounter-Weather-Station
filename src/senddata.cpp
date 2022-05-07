@@ -1,10 +1,10 @@
 // Basic Config
 #include "senddata.h"
 
-uint8_t bme_samples = (SENDCYCLE*2)/BMECYCLE;
 time_t timestmp;                        // timestamp
 struct tm utc_time = {0};               // UTC time
 
+uint8_t wind_send_counter = 0;          // counter for sending wind data
 
 void setSendIRQ(TimerHandle_t xTimer) {
   xTaskNotify(irqHandlerTask, SENDCYCLE_IRQ, eSetBits);
@@ -153,18 +153,25 @@ void sendData() {
 
 #if (HAS_BME)
       case MEMS_DATA:
-        //Average of values ​​in time of SENDCYCLE with sampling time of BMECYLE  
-        bme_status.temperature = bme_status.temperature/bme_samples;
-        bme_status.pressure = bme_status.pressure/bme_samples;
-        bme_status.humidity = bme_status.humidity/bme_samples;
-        payload.reset();
-        payload.addBME(bme_status);
-        SendPayload(BMEPORT);
-        //Reset
-        bme_status.temperature = 0;
-        bme_status.pressure = 0;
-        bme_status.humidity = 0;
-        break;
+        wind_send_counter += 1;
+        if (wind_send_counter < 10){
+          // Average of values
+          bme_status.temperature = bme_status.temperature/bme_status.count_to_avg;
+          bme_status.pressure = bme_status.pressure/bme_status.count_to_avg;
+          bme_status.humidity = bme_status.humidity/bme_status.count_to_avg;
+          payload.reset();
+          payload.addBME(bme_status);
+          SendPayload(BMEPORT);
+          ESP_LOGI(TAG, "Counter for sending wind data: %d | Number of BME samples: %d", wind_send_counter, bme_status.count_to_avg);
+          ESP_LOGI(TAG, "Current Time %d:%d:%d", utc_time.tm_hour, utc_time.tm_min, utc_time.tm_sec);
+          
+          // Reset
+          bme_status.temperature = 0;
+          bme_status.pressure = 0;
+          bme_status.humidity = 0;
+          bme_status.count_to_avg = 0;
+          break;
+        }
 #endif
 
 #if (HAS_GPS)
@@ -185,27 +192,32 @@ void sendData() {
 #if (HAS_SENSORS)
 #if (HAS_SENSOR_1)
       case SENSOR1_DATA:
-        if(utc_time.tm_min == 0){   // send every hour
-          ESP_LOGI(TAG, "Current Time %d:%d:%d", utc_time.tm_hour, utc_time.tm_min, utc_time.tm_sec);
+        if(utc_time.tm_min == 59){   // send every hour
           payload.reset();
           payload.addSensor(sensor_read(1));
           SendPayload(SENSOR1PORT);
           break;
         }
 #endif
-#if (HAS_SENSOR_2)
-      case SENSOR2_DATA:
-        payload.reset();
-        payload.addSensor(sensor_read(2));
-        SendPayload(SENSOR2PORT);
-        break;
-#endif
+// #if (HAS_SENSOR_2)
+//       case SENSOR2_DATA:
+//         if(((uint8_t)(utc_time.tm_min) % 10) == 0){   // send every 10 minutes
+//           payload.reset();
+//           payload.addSensor(sensor_read(2));
+//           SendPayload(SENSOR2PORT);
+//           delay(2000);
+//           break;
+//         }
+// #endif
 #if (HAS_SENSOR_3)
       case SENSOR3_DATA:
-        payload.reset();
-        payload.addSensor(sensor_read(3));
-        SendPayload(SENSOR3PORT);
-        break;
+        if(wind_send_counter == 10){   // send every 10 minutes
+          payload.reset();
+          payload.addSensor(sensor_read(3));
+          SendPayload(SENSOR3PORT);
+          wind_send_counter = 0;
+          break;
+        }
 #endif
 #endif
 
