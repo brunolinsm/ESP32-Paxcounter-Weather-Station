@@ -66,7 +66,7 @@ void sensor_init(void) {
   attachInterrupt(digitalPinToInterrupt(PLUV_PIN), PluvIRQ, RISING);
   // attachInterrupt(digitalPinToInterrupt(ANEM_PIN), anemometerCounter, RISING);
   // detachInterrupt(ANEM_PIN);
-  windcycler.attach(WINDCYCLE, setWindIRQ);
+  // windcycler.attach(WINDCYCLE, setWindIRQ);
   
 }
 

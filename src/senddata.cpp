@@ -6,6 +6,10 @@ struct tm utc_time = {0};               // UTC time
 
 uint8_t wind_send_counter = 0;          // counter for sending wind data
 
+uint8_t rain_send_counter = 0;          // counter for sending rainfall data
+
+bool once = true;                       // activate ticker windcycle
+
 void setSendIRQ(TimerHandle_t xTimer) {
   xTaskNotify(irqHandlerTask, SENDCYCLE_IRQ, eSetBits);
 }
@@ -84,6 +88,11 @@ void sendData() {
   timestmp = time(NULL);
   localtime_r(&timestmp,&utc_time);
 
+  if (once){
+    windcycler.attach(WINDCYCLE, setWindIRQ);
+    once = false;
+  }
+
 #if (HAS_GPS)
   gpsStatus_t gps_status;
 #endif
@@ -154,7 +163,8 @@ void sendData() {
 #if (HAS_BME)
       case MEMS_DATA:
         wind_send_counter += 1;
-        if (wind_send_counter < 10){
+        rain_send_counter += 1;
+        if (wind_send_counter < 10 && rain_send_counter < 59){
           // Average of values
           bme_status.temperature = bme_status.temperature/bme_status.count_to_avg;
           bme_status.pressure = bme_status.pressure/bme_status.count_to_avg;
@@ -192,10 +202,11 @@ void sendData() {
 #if (HAS_SENSORS)
 #if (HAS_SENSOR_1)
       case SENSOR1_DATA:
-        if(utc_time.tm_min == 59){   // send every hour
+        if(rain_send_counter == 59){   // send every 59 minutes
           payload.reset();
           payload.addSensor(sensor_read(1));
           SendPayload(SENSOR1PORT);
+          rain_send_counter = 0;
           break;
         }
 #endif
