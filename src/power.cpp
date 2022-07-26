@@ -145,7 +145,7 @@ void AXP192_init(void) {
     pmu.setDCDC1Voltage(3300); // for external OLED display
     pmu.setLDO2Voltage(3300);  // LORA VDD 3v3
     pmu.setLDO3Voltage(3300);  // GPS VDD 3v3
-
+    
     // configure voltage warning levels
     pmu.setVWarningLevel1(3600);
     pmu.setVWarningLevel2(3800);

@@ -162,9 +162,10 @@ void sendData() {
 
 #if (HAS_BME)
       case MEMS_DATA:
-        wind_send_counter += 1;
-        rain_send_counter += 1;
-        if (wind_send_counter < 10 && rain_send_counter < 59){
+        // wind_send_counter += 1;
+        // rain_send_counter += 1;
+        // if (wind_send_counter < 10 && rain_send_counter < 59){
+        if(((utc_time.tm_min % 10) != 0) && ((utc_time.tm_min % 59) != 0)){   // send every 10 minutes
           // Average of values
           bme_status.temperature = bme_status.temperature/bme_status.count_to_avg;
           bme_status.pressure = bme_status.pressure/bme_status.count_to_avg;
@@ -172,7 +173,8 @@ void sendData() {
           payload.reset();
           payload.addBME(bme_status);
           SendPayload(BMEPORT);
-          ESP_LOGI(TAG, "Counter for sending wind data: %d | Number of BME samples: %d", wind_send_counter, bme_status.count_to_avg);
+          // ESP_LOGI(TAG, "Counter for sending wind data: %d | Number of BME samples: %d", wind_send_counter, bme_status.count_to_avg);
+          ESP_LOGI(TAG, "Number of BME samples: %d", bme_status.count_to_avg);
           ESP_LOGI(TAG, "Current Time %d:%d:%d", utc_time.tm_hour, utc_time.tm_min, utc_time.tm_sec);
           
           // Reset
@@ -180,6 +182,8 @@ void sendData() {
           bme_status.pressure = 0;
           bme_status.humidity = 0;
           bme_status.count_to_avg = 0;
+          wind_send_counter = 0;
+          rain_send_counter = 0;
           break;
         }
 #endif
@@ -202,11 +206,12 @@ void sendData() {
 #if (HAS_SENSORS)
 #if (HAS_SENSOR_1)
       case SENSOR1_DATA:
-        if(rain_send_counter == 59){   // send every 59 minutes
+        // if(rain_send_counter == 59){   // send every 59 minutes
+        if(((utc_time.tm_min % 59) == 0) && (rain_send_counter == 0)){   // send every 59 minutes
           payload.reset();
           payload.addSensor(sensor_read(1));
           SendPayload(SENSOR1PORT);
-          rain_send_counter = 0;
+          rain_send_counter = 1;
           break;
         }
 #endif
@@ -222,11 +227,12 @@ void sendData() {
 // #endif
 #if (HAS_SENSOR_3)
       case SENSOR3_DATA:
-        if(wind_send_counter == 10){   // send every 10 minutes
+        // if(wind_send_counter == 10){   // send every 10 minutes
+        if(((utc_time.tm_min % 10) == 0) && (wind_send_counter == 0)){   // send every 10 minutes
           payload.reset();
           payload.addSensor(sensor_read(3));
           SendPayload(SENSOR3PORT);
-          wind_send_counter = 0;
+          wind_send_counter = 1;
           break;
         }
 #endif

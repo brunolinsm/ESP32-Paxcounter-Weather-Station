@@ -86,7 +86,7 @@ char clientId[20] = {0}; // unique ClientID
 void setup() {
 
   char features[100] = "";
-
+  
   // create some semaphores for syncing / mutexing tasks
   I2Caccess = xSemaphoreCreateMutex(); // for access management of i2c bus
   _ASSERT(I2Caccess != NULL);
@@ -187,7 +187,7 @@ void setup() {
   // now that we are powered, we scan i2c bus for devices
   if (RTC_runmode == RUNMODE_POWERCYCLE)
     i2c_scan();
-
+    
 // initialize display
 #ifdef HAS_DISPLAY
   strcat_P(features, " OLED");

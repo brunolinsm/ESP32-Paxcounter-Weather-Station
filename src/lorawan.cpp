@@ -79,7 +79,7 @@ void lora_setupForNetwork(bool preJoin) {
              getSfName(updr2rps(LMIC.datarate)),
              getBwName(updr2rps(LMIC.datarate)),
              getCrName(updr2rps(LMIC.datarate)));
-  }
+      }
 }
 
 // DevEUI generator using devices's MAC address
@@ -316,7 +316,7 @@ esp_err_t lmic_init(void) {
                           (void *)1,      // parameter of the task
                           2,              // priority of the task
                           &lorasendTask,  // task handle
-                          1);             // CPU core
+                          1);             // CPU core 
 
   return ESP_OK;
 }
@@ -327,6 +327,8 @@ void lora_enqueuedata(MessageBuffer_t *message) {
       pdTRUE) {
     snprintf(lmic_event_msg + 14, LMIC_EVENTMSG_LEN - 14, "<>");
     ESP_LOGW(TAG, "LORA sendqueue is full");
+    esp_restart(); //<<<<<< fix data sending stop for TTN
+
   } else {
     // add Lora send queue length to display
     snprintf(lmic_event_msg + 14, LMIC_EVENTMSG_LEN - 14, "%2u",
