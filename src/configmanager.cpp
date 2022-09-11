@@ -33,7 +33,7 @@ static void defaultConfig(configData_t *myconfig) {
   // device factory settings
   myconfig->loradr = LORADRDEFAULT; // 0-15, lora datarate, see paxcounter.conf
   myconfig->txpower = LORATXPOWDEFAULT; // 0-15, lora tx power
-  myconfig->adrmode = 1;                // 0=disabled, 1=enabled
+  myconfig->adrmode = 0;                // 0=disabled, 1=enabled
   myconfig->screensaver = 0;            // 0=disabled, 1=enabled
   myconfig->screenon = 1;               // 0=disabled, 1=enabled
   myconfig->countermode =

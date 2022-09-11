@@ -40,7 +40,7 @@
 
 // GPS settings
 #define HAS_GPS 0 // use on board GPS
-//#define GPS_SERIAL 9600, SERIAL_8N1, GPIO_NUM_12, GPIO_NUM_15 // UBlox NEO 6M
+// #define GPS_SERIAL 9600, SERIAL_8N1, GPIO_NUM_12, GPIO_NUM_15 // UBlox NEO 6M
 //#define GPS_INT GPIO_NUM_34 // 30ns accurary timepulse, to be external wired on pcb: NEO 6M Pin#3 -> GPIO34
 
 // enable only if device has these sensors, otherwise comment these lines
