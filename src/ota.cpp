@@ -41,7 +41,6 @@ inline String getHeaderValue(String header, String headerName) {
 }
 
 void start_ota_update() {
-
   const char *host = clientId;
 
   switch_LED(LED_ON);
@@ -50,19 +49,14 @@ void start_ota_update() {
 #ifdef HAS_DISPLAY
 
   dp_setup();
-
-  dp_printf("SOFTWARE UPDATE");
-  dp_println();
-  dp_printf("WiFi connect  ..");
-  dp_println();
-  dp_printf("Has Update?   ..");
-  dp_println();
-  dp_printf("Fetching      ..");
-  dp_println();
-  dp_printf("Downloading   ..");
-  dp_println();
-  dp_printf("Rebooting     ..");
-  dp_dump(displaybuf);
+  dp_setFont(MY_FONT_NORMAL);
+  dp->printf("SOFTWARE UPDATE\r\n");
+  dp->printf("WiFi connect  ..\r\n");
+  dp->printf("Has Update?   ..\r\n");
+  dp->printf("Fetching      ..\r\n");
+  dp->printf("Downloading   ..\r\n");
+  dp->printf("Rebooting     ..\r\n");
+  dp_dump();
 #endif
 
   ESP_LOGI(TAG, "Starting Wifi OTA update");
@@ -126,13 +120,11 @@ end:
   ota_display(5, "**", ""); // mark line rebooting
   delay(5000);
   do_reset(false);
-
 } // start_ota_update
 
 // Reads data vom wifi client and flashes it to ota partition
 // returns: 0 = finished, 1 = retry, -1 = abort
 int do_ota_update() {
-
   char buf[17];
   bool redirect = true;
   size_t written = 0;
@@ -324,21 +316,19 @@ abort:
 
 retry:
   return 1;
-
 } // do_ota_update
 
 void ota_display(const uint8_t row, const std::string status,
                  const std::string msg) {
 #ifdef HAS_DISPLAY
-  dp_setFont(MY_FONT_SMALL);
-  dp_setTextCursor(14, row);
-  dp_printf(status.substr(0, 2).c_str());
+  dp->setCursor(14 * 8, row * 8);
+  dp->printf(status.substr(0, 2).c_str());
   if (!msg.empty()) {
-    dp_printf("                ");
-    dp_printf(msg.substr(0, 16).c_str());
-    dp_println();
+    dp->printf("                ");
+    dp->printf(msg.substr(0, 16).c_str());
+    // dp->printf("\r\n");
   }
-  dp_dump(displaybuf);
+  dp_dump();
 #endif
 }
 

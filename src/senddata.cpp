@@ -1,6 +1,9 @@
 // Basic Config
 #include "senddata.h"
 
+// Local logging tag
+static const char TAG[] = __FILE__;
+
 time_t timestmp;                        // timestamp
 struct tm utc_time = {0};               // UTC time
 
@@ -31,7 +34,6 @@ void initSendDataTimer(uint8_t sendcycle) {
 
 // put data to send in RTos Queues used for transmit over channels Lora and SPI
 void SendPayload(uint8_t port) {
-
   ESP_LOGD(TAG, "sending Payload for Port %d", port);
 
   MessageBuffer_t SendBuffer; // contains MessageSize, MessagePort, Message[]
@@ -75,12 +77,10 @@ void SendPayload(uint8_t port) {
 #ifdef HAS_MQTT
   mqtt_enqueuedata(&SendBuffer);
 #endif
-
 } // SendPayload
 
 // timer triggered function to prepare payload to send
 void sendData() {
-
   uint8_t bitmask = cfg.payloadmask;
   uint8_t mask = 1;
 
@@ -108,7 +108,6 @@ void sendData() {
 
   while (bitmask) {
     switch (bitmask & mask) {
-
 #if ((WIFICOUNTER) || (BLECOUNTER))
     case COUNT_DATA:
       payload.reset();
@@ -245,7 +244,6 @@ void sendData() {
         SendPayload(BATTPORT);
         break;
 #endif
-
       } // switch
       bitmask &= ~mask;
       mask <<= 1;

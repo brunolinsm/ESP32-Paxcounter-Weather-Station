@@ -1,4 +1,5 @@
 // Basic Config
+#include "globals.h"
 #include "sensor.h"
 #include "time.h"
 #include "timekeeper.h"
@@ -55,7 +56,6 @@ void IRAM_ATTR readPluviometer(){
 // }
 
 void sensor_init(void) {
-
   // this function is called during device startup
   // put your user sensor initialization routines here
   pinMode(PLUV_RST_PIN,OUTPUT);
@@ -94,7 +94,6 @@ uint8_t sensor_mask(uint8_t sensor_no) {
 }
 
 uint8_t *sensor_read(uint8_t sensor) {
-
   static uint8_t buf[SENSORBUFFER] = {0};
   uint8_t length = 2;
 

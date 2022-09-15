@@ -3,6 +3,7 @@
 
 Tutorial (in german language): https://www.heise.de/select/make/2019/1/1551099236518668
 
+[![CodeFactor](https://www.codefactor.io/repository/github/cyberman54/esp32-paxcounter/badge)](https://www.codefactor.io/repository/github/cyberman54/esp32-paxcounter)
 
 
 <img src="img/Paxcounter-title.jpg">
@@ -22,7 +23,7 @@ Paxcounter is an [ESP32](https://www.espressif.com/en/products/socs/esp32) MCU b
 
 Intention of this project is to do this without intrusion in privacy: You don't need to track people owned devices, if you just want to count them. Therefore, Paxcounter does not persistenly store MAC adresses and does no kind of fingerprinting the scanned devices.
 
-Data can either be be stored on a local SD-card, transferred to cloud using LoRaWAN network or MQTT over TCP/IP, or transmitted to a local host using serial (SPI) interface.
+Data can either be be stored on a local SD-card, transferred to cloud using LoRaWAN network (e.g. TheThingsNetwork or Helium) or MQTT over TCP/IP, or transmitted to a local host using serial (SPI) interface.
 
 You can build this project battery powered using ESP32 deep sleep mode and reach long uptimes with a single 18650 Li-Ion cell.
 
@@ -32,8 +33,9 @@ You can build this project battery powered using ESP32 deep sleep mode and reach
 
 *LoRa & SPI*:
 
+- **LilyGo: [Paxcounter-Board*](https://www.aliexpress.com/item/32915894264.html?spm=a2g0o.productlist.0.0.3d656325QrcfQc&algo_pvid=4a150199-63e7-4d21-bdb1-b48164537744&algo_exp_id=4a150199-63e7-4d21-bdb1-b48164537744-2&pdp_ext_f=%7B%22sku_id%22%3A%2212000023374441919%22%7D)**
+- TTGO: T1*, T2*, T3*, T-Beam, T-Fox
 - Heltec: LoRa-32 v1 and v2
-- TTGO: [Paxcounter-Board*](https://www.aliexpress.com/item/32915894264.html?spm=a2g0o.productlist.0.0.3d656325QrcfQc&algo_pvid=4a150199-63e7-4d21-bdb1-b48164537744&algo_exp_id=4a150199-63e7-4d21-bdb1-b48164537744-2&pdp_ext_f=%7B%22sku_id%22%3A%2212000023374441919%22%7D), T1*, T2*, T3*, T-Beam, T-Fox
 - Pycom: LoPy, LoPy4, FiPy
 - Radioshuttle.de: [ECO Power Board](https://www.radioshuttle.de/esp32-eco-power/esp32-eco-power-board/)
 - WeMos: LoLin32 + [LoraNode32 shield](https://github.com/hallard/LoLin32-Lora),
@@ -82,7 +84,7 @@ Some <b>3D printable cases</b> can be found (and, if wanted so, ordered) on Thin
 for example.<br>
 
 <b>Power consumption</b> was metered at around 450 - 1000mW, depending on board and user settings in paxcounter.conf.
-By default bluetooth sniffing not installed (#define *BLECOUNTER* 0 in paxcounter.conf). Installing and enabling bluetooth costs 30% more power + 30% flash storage for the software stack. If you enable bluetooth be aware that this goes on expense of wifi sniffing results, because then wifi and bt stack must share the 2,4 GHz RF ressources of ESP32. If you need to sniff wifi and bt in parallel and need best possible results, use two boards - one for wifi only and one for bt only - and add counted results.
+By default bluetooth sniffing not installed (#define *BLECOUNTER* 0 in paxcounter.conf). If you enable bluetooth be aware that this goes on expense of wifi sniffing results, because then wifi and bt stack must share the 2,4 GHz RF ressources of ESP32. If you need to sniff wifi and bt in parallel and need best possible results, use two boards - one for wifi only and one for bt only - and add counted results.
 
 # Preparing
 
@@ -98,7 +100,7 @@ Edit `platformio_orig.ini` and select desired hardware target in section boards.
 ## paxcounter.conf
 Edit `src/paxcounter_orig.conf` and tailor settings in this file according to your needs and use case. Please take care of the duty cycle regulations of the LoRaWAN network you're going to use. Copy or rename to `src/paxcounter.conf`.
 
-If your device has a **real time clock** it can be updated bei either LoRaWAN network or GPS time, according to settings *TIME_SYNC_INTERVAL* and *TIME_SYNC_LORAWAN* in `paxcounter.conf`.
+If your device has a **real time clock** it can be updated by either LoRaWAN network or GPS time, according to settings *TIME_SYNC_INTERVAL* and *TIME_SYNC_LORAWAN* in `paxcounter.conf`.
 
 ## src/lmic_config.h
 Edit `src/lmic_config.h` and tailor settings in this file according to your country and device hardware. Please take care of national regulations when selecting the frequency band for LoRaWAN.

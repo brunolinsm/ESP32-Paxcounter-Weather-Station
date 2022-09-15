@@ -48,7 +48,6 @@ void setBMEIRQ() { xTaskNotify(irqHandlerTask, BME_IRQ, eSetBits); }
 // initialize MEMS sensor
 // return = 0 -> error / return = 1 -> success
 int bme_init(void) {
-
   int rc = 0;
 
 #ifdef HAS_BME680
@@ -91,7 +90,6 @@ int bme_init(void) {
   if (rc)
     bmecycler.attach(BMECYCLE, setBMEIRQ); // start cyclic data transmit
   return rc;
-
 } // bme_init()
 
 #ifdef HAS_BME680
@@ -122,9 +120,7 @@ int checkIaqSensorStatus(void) {
 
 // store current BME sensor data in struct
 void bme_storedata(bmeStatus_t *bme_store) {
-
-  if ((cfg.payloadmask & MEMS_DATA) &&
-      (I2C_MUTEX_LOCK())) { // block i2c bus access
+  if (cfg.payloadmask & MEMS_DATA)
 
 #ifdef HAS_BME680
     if (iaqSensor.run()) { // if new data is available
@@ -157,10 +153,6 @@ void bme_storedata(bmeStatus_t *bme_store) {
     // bme.readAltitude(SEALEVELPRESSURE_HPA);
     bme_store->iaq = 0; // IAQ feature not present with BME280
 #endif
-
-    I2C_MUTEX_UNLOCK(); // release i2c bus access
-  }
-
 } // bme_storedata()
 
 #ifdef HAS_BME680
@@ -187,7 +179,6 @@ void updateState(void) {
       stateUpdateCounter++;
     }
   } else {
-
     /* Update every STATE_SAVE_PERIOD minutes */
     if ((long)(millis() - stateUpdateCounter * STATE_SAVE_PERIOD) >= 0) {
       update = true;
